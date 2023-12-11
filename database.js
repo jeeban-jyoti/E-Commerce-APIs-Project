@@ -73,6 +73,7 @@ const BUYER_DATA = mongoose.model("buyerdata", buyer);
 
 
 async function addUser(username, password, usertype){
+    console.log(username, password, usertype);
     if(usertype == 'seller'){
         try{
             const check = await SELLER_DATA.find({username: username});
@@ -181,8 +182,53 @@ async function userLoginWithToken(token, usertype){
     }
 }
 
+async function getSellerList(){
+    try{
+        const list = await SELLER_DATA.find();
+        var sellers = [];
+        list.map((data, index) =>{
+            sellers.push(data.username);
+        })
+        return {data: sellers, message: "list fetched successfully"};
+    }
+    catch{
+        return {data: [], message: "error occured, list not found"};
+    }
+}
+
+async function getSellerCatalog(seller_username){
+    try{
+        const seller = await SELLER_DATA.find({username: seller_username});
+        return {catalog: seller.catalog, message: "catalog of " + seller_username + "fetched successfully"};
+    }catch{
+        return {catalog: [], message: "error occured, catalog couldn't be fetched"};
+    }
+}
+
+async function addOrders(seller_username, buyer_username, orders_list){
+    try{
+        const seller = await SELLER_DATA.find({username: seller_username});
+        if(seller.length == 0){
+            return {message: "seller not found"};
+        }
+        else{
+            const buyer = await BUYER_DATA.find({username: buyer_username});
+            orders_list.map(async (data, index) => {
+                await SELLER_DATA.findOneAndUpdate({username: seller_username}, {orders: seller[0].orders.push(data)});
+            })
+            orders_list.map(async (data, index) => {
+                await BUYER_DATA.findOneAndUpdate({username: buyer_username}, {orders: buyer[0].orders.push(data)});
+            })
+            return {message: "orders updated successfully for seller and buyer"};
+        }
+    }
+    catch{
+        return {message: "error occured, couldn't update orders list"};
+    }
+}
+
 //===================================================================
 
 
 
-module.exports = {addUser, userLoginWithCred, userLoginWithToken}
+module.exports = {addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders}

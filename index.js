@@ -1,5 +1,5 @@
 const express = require('express');
-const { addUser, userLoginWithCred, userLoginWithToken } = require('./database')
+const { addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders } = require('./database')
 
 const app = express();
 app.use(express.json());
@@ -14,6 +14,7 @@ app.post('/api/auth/register', async (req, res) => {
     const type = req.body.usertype;
 
     const response = await addUser(username, password, type);
+    console.log(response);
     res.send(response);
 });
 
@@ -32,23 +33,30 @@ app.post('/api/auth/login', async (req, res) => {
         response = await userLoginWithToken(token, type);
         console.log("token")
     }
-
+    console.log(response);
     res.send(response);
 
 });
 
 //APIs for Buyers
 
-app.get('/api/buyer/list-of-sellers', (req, res) => {
-
+app.get('/api/buyer/list-of-sellers', async (req, res) => {
+    const sellerlist = await getSellerList();
+    res.send(sellerlist);
 });
 
-app.get(' /api/buyer/seller-catalog/:seller_id', (req, res) => {
-
+app.get('/api/buyer/seller-catalog/:seller_id', (req, res) => {
+    const catalog = getSellerCatalog(req.params.seller_id);
+    res.send(catalog);
 });
 
-app.post('/api/buyer/create-order/:seller_id', (req, res) => {
+app.post('/api/buyer/create-order/:seller_id', async (req, res) => {
+    const buyer = req.body.buyer;
+    const orders = req.body.orders;
+    const seller = req.params.seller_id;
 
+    const response = await addOrders(seller, buyer, orders);
+    res.send(response);
 });
 
 //APIs for Sellers
