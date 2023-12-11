@@ -1,5 +1,5 @@
 const express = require('express');
-const { addUser } = require('./database')
+const { addUser, userLoginWithCred, userLoginWithToken } = require('./database')
 
 const app = express();
 app.use(express.json());
@@ -11,13 +11,29 @@ const PORT = 8000;
 app.post('/api/auth/register', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const type = req.body.type;
+    const type = req.body.usertype;
 
     const response = await addUser(username, password, type);
     res.send(response);
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
+    const token = req.body.authToken;
+    const username = req.body.username;
+    const password = req.body.password;
+    const type = req.body.usertype;
+    var response = {};
+
+    if(token == null){
+        response = await userLoginWithCred(username, password, type);
+        console.log("tokenless", response)
+    }
+    else{
+        response = await userLoginWithToken(token, type);
+        console.log("token")
+    }
+
+    res.send(response);
 
 });
 
