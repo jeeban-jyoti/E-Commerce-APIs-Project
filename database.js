@@ -5,46 +5,6 @@ mongoose.connect("mongodb://localhost:27017/UserData", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
-/*
-const contactSchema = {
-    roomLink: String,
-    users: Array,
-    public: Boolean
-};
-const DATA = mongoose.model("livechatapplication", contactSchema);
-
-function adddUser(url, userdata){
-    DATA.find({roomLink: url}).
-    then(result=>{
-        result[0].users.push(userdata)
-        result[0].save()
-        console.log(result)
-    })
-}
-
-function removeUser(userid){
-    DATA.find().
-    then(result=>{
-        result.forEach(room => {
-            (room.users).forEach(element => {
-            if(element[0] == userid){
-                result[0].users.pop(element)
-                console.log(result)
-                room.save()
-            }
-            });
-        });
-    })
-}
-
-function deleteRoom(url){
-    DATA.deleteOne({roomLink: url}).
-    then(result=>{
-        console.log("deleted ", url)
-    })
-}
-*/
-//===================================================================
 
 function hash(key){
     let Digest = crypto.createHash('sha256').update(key).digest("base64");
@@ -198,10 +158,16 @@ async function getSellerList(){
 
 async function getSellerCatalog(seller_username){
     try{
-        const seller = await SELLER_DATA.find({username: seller_username});
-        return {catalog: seller.catalog, message: "catalog of " + seller_username + "fetched successfully"};
-    }catch{
-        return {catalog: [], message: "error occured, catalog couldn't be fetched"};
+        const user = await SELLER_DATA.find({username: seller_username});
+        if(user.length == 0){
+            return {catalog: [], message: "seller doesn't exist, catalog not fetched"};
+        }
+        else{
+            return {catalog: user[0].catalog, message: "catalog fetched successfully"};
+        }
+    }
+    catch{
+        return {catalog: [], message: "error occured, catalog not fetched"};
     }
 }
 
@@ -229,8 +195,36 @@ async function addOrders(seller_username, buyer_username, orders_list){
     }
 }
 
-//===================================================================
+async function setCatalog(token, products_list){
+    try{
+        const user = await SELLER_DATA.find({token: hash(token)});
+        if(user.length == 0){
+            return {message: "authentication error - wrong token, catalog not updated"};
+        }
+        else{
+            await SELLER_DATA.findOneAndUpdate({token: hash(token)}, {catalog: products_list});
+            return {message: "catalog updated"};
+        }
+    }
+    catch{
+        return {message:"error occured, catalog not updated"};
+    }
+}
+
+async function getOrders(seller_id){
+    try{
+        const user = await SELLER_DATA.find({username: seller_id});
+        if(user.length == 0){
+            return {orders: [], message: "seller doesn't exist, orders list not fetched"};
+        }
+        else{
+            return {orders: user[0].orders, message: "orders fetched successfully"};
+        }
+    }
+    catch{
+        return {orders: [], message: "error occured, orders list not fetched"};
+    }
+}
 
 
-
-module.exports = {addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders}
+module.exports = {addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders, setCatalog, getOrders}

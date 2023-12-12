@@ -1,5 +1,5 @@
 const express = require('express');
-const { addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders } = require('./database')
+const { addUser, userLoginWithCred, userLoginWithToken, getSellerList, getSellerCatalog, addOrders, setCatalog, getOrders } = require('./database')
 
 const app = express();
 app.use(express.json());
@@ -45,9 +45,11 @@ app.get('/api/buyer/list-of-sellers', async (req, res) => {
     res.send(sellerlist);
 });
 
-app.get('/api/buyer/seller-catalog/:seller_id', (req, res) => {
-    const catalog = getSellerCatalog(req.params.seller_id);
-    res.send(catalog);
+app.get('/api/buyer/seller-catalog/:seller_id', async (req, res) => {
+    const seller_id = req.params.seller_id;
+    
+    const response = await getSellerCatalog(seller_id);
+    res.send(response);
 });
 
 app.post('/api/buyer/create-order/:seller_id', async (req, res) => {
@@ -61,12 +63,19 @@ app.post('/api/buyer/create-order/:seller_id', async (req, res) => {
 
 //APIs for Sellers
 
-app.post('/api/seller/create-catalog', (req, res) => {
+app.post('/api/seller/create-catalog', async (req, res) => {
+    const token = req.body.authToken;
+    const products_list = req.body.products_list;
 
+    const response = await setCatalog(token, products_list);
+    res.send(response);
 });
 
-app.get('/api/seller/orders', (req, res) => {
+app.get('/api/seller/orders', async (req, res) => {
+    const seller_id = req.query.seller_id;
 
+    const response = await getOrders(seller_id);
+    res.send(response);
 });
 
 app.listen(PORT, function(){
