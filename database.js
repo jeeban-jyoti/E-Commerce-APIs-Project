@@ -214,10 +214,12 @@ async function addOrders(seller_username, buyer_username, orders_list){
         else{
             const buyer = await BUYER_DATA.find({username: buyer_username});
             orders_list.map(async (data, index) => {
-                await SELLER_DATA.findOneAndUpdate({username: seller_username}, {orders: seller[0].orders.push(data)});
+                seller[0].orders.push(data)
+                await SELLER_DATA.findOneAndUpdate({username: seller_username}, {orders: seller[0].orders});
             })
             orders_list.map(async (data, index) => {
-                await BUYER_DATA.findOneAndUpdate({username: buyer_username}, {orders: buyer[0].orders.push(data)});
+                buyer[0].orders.push(data)
+                await BUYER_DATA.findOneAndUpdate({username: buyer_username}, {orders: seller[0].orders});
             })
             return {message: "orders updated successfully for seller and buyer"};
         }
