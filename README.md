@@ -57,7 +57,7 @@ Endpoint: POST /api/buyer/create-order/:seller_id
 ```json
 {
     "buyer": "buyer username",
-    "orders": [list of orders]
+    "orders": [ "list of orders" ]
 }
 
 ```
@@ -72,7 +72,7 @@ Endpoint: POST /api/seller/create-catalog
 ```json
 {
     "authToken": "authToken of seller",
-    "products_list": [ list of products ]
+    "products_list": [ "list of products" ]
 }
 
 ```
